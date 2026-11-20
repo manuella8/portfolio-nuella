@@ -96,6 +96,20 @@
             ...document.querySelectorAll('.video-wrapper video')
         ];
 
+        // Vidéo absente du dossier videos/ : on affiche un message au lieu d'un lecteur vide.
+        videos.forEach(video => {
+            const wrapper = video.closest('.video-wrapper');
+            const markMissing = () => wrapper && wrapper.classList.add('is-missing');
+            video.querySelectorAll('source').forEach(source => {
+                source.addEventListener('error', markMissing);
+            });
+            video.addEventListener('error', markMissing);
+            // Filet de sécurité si l'erreur est arrivée avant ce script.
+            setTimeout(() => {
+                if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) markMissing();
+            }, 3000);
+        });
+
         videos.forEach(video => {
             video.addEventListener('play', () => {
                 videos.forEach(other => {

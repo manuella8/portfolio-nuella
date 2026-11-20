@@ -589,31 +589,60 @@ socialLinks.forEach(link => {
 const contactForm =
     document.querySelector('#contactForm');
 
+/*
+   Envoi du formulaire de contact.
+   - FORM_ENDPOINT vide : le message s'ouvre dans la messagerie du visiteur (mailto).
+   - Pour recevoir les messages directement par mail sans que le visiteur
+     ouvre sa messagerie : créer un formulaire gratuit sur formspree.io et
+     coller ici son adresse, par exemple 'https://formspree.io/f/abcdwxyz'.
+*/
+const FORM_ENDPOINT = '';
+const CONTACT_EMAIL = 'manuellaagbaguede@gmail.com';
+
 if (contactForm) {
 
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
 
         e.preventDefault();
 
         const button =
             contactForm.querySelector('.contact-submit span:first-child');
+        const originalText = button ? button.textContent : '';
+        const isEN = (localStorage.getItem('language') || 'fr') === 'en';
 
-        if (button) {
+        const setLabel = (text, reset = true) => {
+            if (!button) return;
+            button.textContent = text;
+            if (reset) setTimeout(() => { button.textContent = originalText; }, 3000);
+        };
 
-            const originalText =
-                button.textContent;
+        const data = new FormData(contactForm);
+        const name = (data.get('name') || '').toString().trim();
+        const email = (data.get('email') || '').toString().trim();
+        const message = (data.get('message') || '').toString().trim();
 
-            button.textContent =
-                'Message prêt à être envoyé ✓';
-
-            setTimeout(() => {
-
-                button.textContent =
-                    originalText;
-
-            }, 2500);
-
+        if (FORM_ENDPOINT) {
+            setLabel(isEN ? 'Sending…' : 'Envoi en cours…', false);
+            try {
+                const res = await fetch(FORM_ENDPOINT, {
+                    method: 'POST',
+                    body: data,
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!res.ok) throw new Error(res.status);
+                contactForm.reset();
+                setLabel(isEN ? 'Message sent ✓' : 'Message envoyé ✓');
+            } catch (err) {
+                setLabel(isEN ? 'Error, please email me directly' : 'Erreur, écrivez-moi par mail');
+            }
+            return;
         }
+
+        const subject = `Contact portfolio — ${name}`;
+        const body = `${message}\n\n${name}\n${email}`;
+        window.location.href =
+            `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        setLabel(isEN ? 'Opening your email app…' : 'Ouverture de votre messagerie…');
 
     });
 

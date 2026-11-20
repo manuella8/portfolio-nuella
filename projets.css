@@ -3486,3 +3486,21 @@ body.lightbox-open { overflow: hidden; }
     .js-reveal { opacity: 1; 
         transform: none; }
 }
+
+
+/* Vidéo pas encore en ligne */
+.video-wrapper.is-missing video {
+    visibility: hidden;
+}
+
+.video-wrapper.is-missing::after {
+    content: "Vidéo bientôt disponible";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+}
